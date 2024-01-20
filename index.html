@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Matte Webpage</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #content {
+            text-align: center;
+        }
+
+        select {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+        }
+
+        table {
+            width: 80%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid #555;
+        }
+
+        th {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <h1>Data Display</h1>
+        <div>
+            <label for="dropdown1">Dropdown 1:</label>
+            <select id="dropdown1"></select>
+
+            <label for="dropdown2">Dropdown 2:</label>
+            <select id="dropdown2"></select>
+
+            <label for="dropdown3">Dropdown 3:</label>
+            <select id="dropdown3"></select>
+
+            <label for="dropdown4">Dropdown 4:</label>
+            <select id="dropdown4"></select>
+        </div>
+
+        <table id="data-table"></table>
+    </div>
+
+    <script>
+        // Fetch CSV data and populate dropdowns
+        // Replace 'yourdata.csv' with the actual path to your CSV file
+        fetch('yourdata.csv')
+            .then(response => response.text())
+            .then(data => {
+                const rows = data.split('\n');
+                const headers = rows[0].split(',');
+
+                // Populate dropdowns
+                for (let i = 0; i < headers.length; i++) {
+                    document.getElementById(`dropdown${i + 1}`).innerHTML = rows.slice(1).map(row => {
+                        const value = row.split(',')[i];
+                        return `<option value="${value}">${value}</option>`;
+                    }).join('');
+                }
+
+                // Display data in the table
+                updateTable();
+            });
+
+        // Update table based on selected values in dropdowns
+        function updateTable() {
+            const selectedValues = Array.from({ length: 4 }, (_, i) =>
+                document.getElementById(`dropdown${i + 1}`).value
+            );
+
+            fetch('yourdata.csv')
+                .then(response => response.text())
+                .then(data => {
+                    const rows = data.split('\n');
+                    const filteredRows = rows.filter(row =>
+                        selectedValues.every((value, i) =>
+                            value === '' || row.split(',')[i] === value
+                        )
+                    );
+
+                    const headers = rows[0].split(',');
+                    const tableContent = `
+                        <tr>${headers.map(header => `<th>${header}</th>`).join('')}</tr>
+                        ${filteredRows.map(row => `<tr>${row.split(',').map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
+                    `;
+
+                    document.getElementById('data-table').innerHTML = tableContent;
+                });
+        }
+
+        // Add event listeners to dropdowns
+        for (let i = 0; i < 4; i++) {
+            document.getElementById(`dropdown${i + 1}`).addEventListener('change', updateTable);
+        }
+    </script>
+</body>
+</html>
